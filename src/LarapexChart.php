@@ -11,9 +11,9 @@ class LarapexChart
     | Chart
     |--------------------------------------------------------------------------
     |
-    | This class build the chart by passing setters to the object, it will 
-    | use the method container and scripts to generate a JSON  
-    | in blade views, it works also with Vue JS components  
+    | This class build the chart by passing setters to the object, it will
+    | use the method container and scripts to generate a JSON
+    | in blade views, it works also with Vue JS components
     |
     */
 
@@ -35,6 +35,7 @@ class LarapexChart
     protected string $markers;
     protected bool $stacked = false;
     protected bool $showLegend = true;
+    protected string $legendPosition = 'right';
     protected string $stroke = '';
     protected string $toolbar;
     protected string $zoom;
@@ -134,11 +135,11 @@ class LarapexChart
         return $this;
     }
 
-	public function setFontFamily($fontFamily) :LarapexChart
-	{
-		$this->fontFamily = $fontFamily;
-		return $this;
-	}
+    public function setFontFamily($fontFamily) :LarapexChart
+    {
+        $this->fontFamily = $fontFamily;
+        return $this;
+    }
 
     public function setFontColor($fontColor) :LarapexChart
     {
@@ -172,7 +173,7 @@ class LarapexChart
 
     public function setHorizontal(bool $horizontal) :LarapexChart
     {
-        $this->horizontal = json_encode(['horizontal' => $horizontal]);
+        $this->horizontal = $horizontal;
         return $this;
     }
 
@@ -255,18 +256,22 @@ class LarapexChart
         return $this;
     }
 
-    public function setDataLabels(bool $enabled = true) :LarapexChart
+    public function setDataLabels(bool $enabled = true, $custom = []) :LarapexChart
     {
-        $this->dataLabels = json_encode(['enabled' => $enabled]);
+        $_enabled = ['enabled' => $enabled];
+        if (!empty($custom)) {
+            $_enabled = array_merge($_enabled, $custom);
+        }
+        $this->dataLabels = json_encode($_enabled);
         return $this;
     }
 
     public function setTheme(string $theme) :LarapexChart
     {
         $this->theme = $theme;
-	return $this;
+        return $this;
     }
-  
+
     public function setSparkline(bool $enabled = true): LarapexChart
     {
         $this->sparkline = json_encode(['enabled' => $enabled]);
@@ -282,6 +287,12 @@ class LarapexChart
     public function setShowLegend(bool $showLegend = true): self
     {
         $this->showLegend = $showLegend;
+        return $this;
+    }
+
+    public function setLegendPosition(string $legendPosition = 'right'): self
+    {
+        $this->legendPosition = $legendPosition;
         return $this;
     }
 
@@ -339,10 +350,10 @@ class LarapexChart
         return $this->type;
     }
 
-	public function fontFamily(): string
+    public function fontFamily(): string
     {
-		return $this->fontFamily;
-	}
+        return $this->fontFamily;
+    }
 
     public function foreColor(): string
     {
@@ -426,7 +437,12 @@ class LarapexChart
 
     public function showLegend(): string
     {
-        return $this->showLegend ? 'true' : 'false';
+        return $this->showLegend ? true : false;
+    }
+
+    public function getLegendPosition(): string
+    {
+        return $this->legendPosition;
     }
 
     /*
@@ -450,7 +466,9 @@ class LarapexChart
                 'stacked' => $this->stacked(),
             ],
             'plotOptions' => [
-                'bar' => json_decode($this->horizontal()),
+                'bar' => [
+                    'horizontal' => $this->horizontal(),
+                ]
             ],
             'colors' => json_decode($this->colors()),
             'series' => json_decode($this->dataset()),
@@ -508,7 +526,10 @@ class LarapexChart
                 'stacked' => $this->stacked(),
             ],
             'plotOptions' => [
-                'bar' => json_decode($this->horizontal()),
+                'bar' => [
+                    'horizontal' => $this->horizontal(),
+                    'dataLabels' => json_decode($this->dataLabels()),
+                ]
             ],
             'colors' => json_decode($this->colors()),
             'dataLabels' => json_decode($this->dataLabels()),
@@ -528,7 +549,8 @@ class LarapexChart
             'grid' => json_decode($this->grid()),
             'markers' => json_decode($this->markers()),
             'legend' => [
-                'show' => $this->showLegend()
+                'show' => $this->showLegend(),
+                'position' => $this->getLegendPosition()
             ]
         ];
 
